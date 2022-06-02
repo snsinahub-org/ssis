@@ -47,9 +47,7 @@ runs:
             devenv "$_" /build "${{ inputs.project_configuration }}" /Project "$_"
             echo "C:\Windows\System32\robocopy.exe $bin_path\bin\${{ inputs.project_configuration }} ${{ inputs.output_path }} /s /r:10"
             C:\Windows\System32\robocopy.exe "$bin_path\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}" /s /r:10 
-            set/A errlev="%ERRORLEVEL% & 24"
-            exit/B %errlev%
-
+            
           }         
           
           
@@ -58,3 +56,10 @@ runs:
                 
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
+    - run: |
+        set/A errlev="%ERRORLEVEL% & 24"
+        exit/B %errlev%                
+      shell: cmd
+
+
+      
