@@ -26,7 +26,8 @@ runs:
         $TMP = Split-Path -Path $VS_FILE.replace('\\', '\')
         $VS_PATH = $TMP.replace('"', '')
         $Env:PATH += ";$VS_PATH"
-        Get-ChildItem -Path "${{ inputs.project_path }}" -Filter *.dtproj -Recurse -File -Name| ForEach-Object {
+        cd "${{ inputs.project_path }}"
+        Get-ChildItem -Path .\ -Filter *.dtproj -Recurse -File -Name| ForEach-Object {
           echo $_
           devenv $_ /build "${{ inputs.project_configuration }}" /Project $_
         }
