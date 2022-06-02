@@ -34,11 +34,12 @@ runs:
         Get-ChildItem -Path "${{ inputs.project_path }}" -Filter "${{ inputs.file_extenstion }}" -File -Name| ForEach-Object {    
 
           $proj = "${{ inputs.project_path }}/" + $_
-          echo "Path ----- > " + $proj
-          cd $proj
+          echo "Path ----- >  + $proj"
+          $directory=Split-Path -Path "$proj"
+          cd "${{ inputs.project_path }}"
           Get-ChildItem -Path \. -Recurse -Filter "*.dtproj" -File -Name| ForEach-Object { 
             # $directory=Split-Path -Path $proj
-            echo "devenv $proj /build ${{ inputs.project_configuration }} /Project $proj"
+            echo "devenv $_ /build ${{ inputs.project_configuration }} /Project $_"
             devenv "$_" /build "${{ inputs.project_configuration }}" /Project "$_"            
           }         
           C:\Windows\System32\robocopy.exe "${{ inputs.project_path }}\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
