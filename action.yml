@@ -35,6 +35,7 @@ runs:
           $proj = "${{ inputs.project_path }}/" + $_
           echo "Path ----- > " + $proj
           $directory=Split-Path -Path $proj
+          echo "devenv $proj /build ${{ inputs.project_configuration }} /Project $proj"
           devenv "$proj" /build "${{ inputs.project_configuration }}" /Project "$proj"
           C:\Windows\System32\robocopy.exe "${{ inputs.project_path }}\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
         }
