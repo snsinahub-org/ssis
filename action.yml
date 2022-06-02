@@ -42,7 +42,7 @@ runs:
             echo "devenv $_ /build ${{ inputs.project_configuration }} /Project $_"
             devenv "$_" /build "${{ inputs.project_configuration }}" /Project "$_"            
           }         
-          C:\Windows\System32\robocopy.exe "${{ inputs.project_path }}\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
+          C:\Windows\System32\robocopy.exe "${{ inputs.project_path }}\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}" /s /r:10
           
         }
                 
