@@ -55,7 +55,7 @@ runs:
             # Copy-Item -Path "$bin_path\bin\${{ inputs.project_configuration }}" -Destination "${{ inputs.output_path }}" 
             Get-ChildItem -Path "$bin_path"  -Recurse -File  -Name |  ForEach-Object {    
                 echo "$bin_path\$_"
-                Copy-Item -Path "$bin_path\$_" -Destination "C:\Users\Siavash Namvar\c_temp"
+                Copy-Item -Path "$bin_path\$_" -Destination "${{ inputs.output_path }}"
             }
           }                
                     
