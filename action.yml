@@ -6,10 +6,13 @@ inputs:
     required: true
   project_configuration:  
     description: 'test-path'
-    required: false
+    required: true
   output_path:  
     description: 'newTag'
-    required: false  
+    required: true  
+  ssis_action:  
+    description: 'newTag'
+    required: true
 outputs:
   random-number:
     description: "Random number"
@@ -19,64 +22,15 @@ runs:
   steps:
     - run: |
         $Env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\Installer"
-        vswhere -products * -format json        
-      shell: powershell     
-    # - run: |
-    #     cd "${{ inputs.path }}"
-    #     Get-ChildItem -Path .\ -Filter ${{ inputs.file_extenstion }} -Depth 1 -Recurse -File -Name| ForEach-Object {            
-    #         dotnet build $_ --configuration ${{ inputs.build_configuration }} 
-    #     }
-    #   shell: powershell
-    #   if: ${{ inputs.dotnet_action == 'build' }}
-    # - run: |
-    #     cd "${{ inputs.path }}"
-    #     if(!(test-path "${{ inputs.temp_path }}")) {
-    #       mkdir "${{ inputs.temp_path }}"
-    #     }
-    #     Get-ChildItem -Path ".\${{ inputs.test_path }}" -Filter ${{ inputs.file_extenstion }} -Depth ${{ inputs.test_depth }} -Recurse -File -Name| ForEach-Object {            
-    #         dotnet test $_ --logger trx --results-directory "${{ inputs.temp_path }}" --configuration ${{ inputs.build_configuration }}
-    #     }
-    #   shell: powershell
-    #   if: ${{ inputs.dotnet_action == 'test' }}
-    # - run: |
-    #     cd "${{ inputs.path }}"
-    #     if(!(test-path "${{ inputs.temp_path }}")) {
-    #       mkdir "${{ inputs.temp_path }}"
-    #     }
+        $VS_FILE = vswhere -products * -format json | jq '.[0]' | jq .productPath
+        $TMP = Split-Path -Path $VS_FILE.replace('\\', '\')
+        $VS_PATH = $TMP.replace('"', '')
+        $Env:PATH += ";$VS_PATH"
+        Get-ChildItem -Path ${{ inputs.project_path }} -Filter *.dtproj -Recurse -File -Name| ForEach-Object {
 
-        
-        
-    #     Get-ChildItem -Path .\  -Recurse -Depth 1 -Filter "wwwroot" -Directory  -Name |  ForEach-Object {
-    #         cd $_
-    #         cd ../
-    #         pwd
-    #         # $pt =  (get-item $_ ).parent.FullName
-    #         # cd $pt
-    #         $NAME= (get-item "${{ inputs.file_extenstion }}")
-    #         echo --- NAME ---
-    #         echo $NAME
-    #         # if((test-path -Path ".\$NAME")) {
-    #           dotnet publish $NAME --configuration "${{ inputs.build_configuration }}" --output "${{ inputs.temp_path }}" /property:Version="${{ inputs.newTag }}"
-    #         # }
+          devenv $_ /build Development /Project $_
 
-    #         # echo "${{ inputs.path }}"
-    #         # echo ----
-    #         # echo "$pt"
-    #         # cd "$pt"
-    #         # Get-ChildItem -Path .\  -Filter "${{ inputs.file_extenstion }}" -File  -Name |  ForEach-Object {
-    #         #     dotnet publish $_ --configuration "${{ inputs.build_configuration }}" --output "${{ inputs.temp_path }}" /property:Version="${{ inputs.newTag }}"
-    #         # }
-    #     }
-    #   shell: powershell
-    #   if: ${{ inputs.dotnet_action == 'publish' && inputs.dotnet_web_publish == 'true'}}
-    # - run: |
-    #     cd "${{ inputs.path }}"
-    #     if(!(test-path "${{ inputs.temp_path }}")) {
-    #       mkdir "${{ inputs.temp_path }}"
-    #     }       
-        
-    #     Get-ChildItem -Path .\ -Recurse -Filter "${{ inputs.file_extenstion }}"  -Depth 1 -File  -Name |  ForEach-Object {
-    #         dotnet publish $_ --configuration "${{ inputs.build_configuration }}" --output "${{ inputs.temp_path }}" /property:Version="${{ inputs.newTag }}"
-    #     }        
-    #   shell: powershell
-    #   if: ${{ inputs.dotnet_action == 'publish' && inputs.dotnet_web_publish != 'true'}}
+        }
+        C:\Windows\System32\robocopy.exe D:\TFS_BUILD\Working\13\s\BulkUploadPackages\bin\Development D:\TFS_BUILD\Working\13\a /s /r:10
+      shell: powershell
+      if: ${{ inputs.ssis_action == 'build' }}
