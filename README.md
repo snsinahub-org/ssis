@@ -1,7 +1,7 @@
 # ssis
 
 ## Pre-requisites
-Install [JQ for windows](https://stedolan.github.io/jq/download/)
+Install [JQ for windows](https://stedolan.github.io/jq/download/) in windows runner
 
 ```YAML
 - name: ssis build
