@@ -12,7 +12,8 @@ inputs:
     required: true  
   file_extenstion:  
     description: 'file_extenstion'
-    required: true 
+    required: false
+    default: '*.sln'
   ssis_action:  
     description: 'output_path'
     required: true
