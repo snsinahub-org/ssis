@@ -60,7 +60,7 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |
-        C:\Windows\System32\robocopy.exe "${{ steps.ssis-build.outputs.gh_bin_path }}" "${{ inputs.output_path }}" /s /r:10 /ndl; exit 0
+        C:\Windows\System32\robocopy.exe "${{ steps.ssis-build.outputs.gh_bin_path }}" "${{ inputs.output_path }}" /s /r:10 ; exit 0
       shell: cmd
     
 
