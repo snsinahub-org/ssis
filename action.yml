@@ -1,0 +1,82 @@
+name: 'action yml'
+description: 'dotnet restore'
+inputs:
+  project_path:  
+    description: 'path'
+    required: true
+  project_configuration:  
+    description: 'test-path'
+    required: false
+  output_path:  
+    description: 'newTag'
+    required: false  
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        $Env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\Installer"
+        vswhere -products * -format json        
+      shell: powershell     
+    # - run: |
+    #     cd "${{ inputs.path }}"
+    #     Get-ChildItem -Path .\ -Filter ${{ inputs.file_extenstion }} -Depth 1 -Recurse -File -Name| ForEach-Object {            
+    #         dotnet build $_ --configuration ${{ inputs.build_configuration }} 
+    #     }
+    #   shell: powershell
+    #   if: ${{ inputs.dotnet_action == 'build' }}
+    # - run: |
+    #     cd "${{ inputs.path }}"
+    #     if(!(test-path "${{ inputs.temp_path }}")) {
+    #       mkdir "${{ inputs.temp_path }}"
+    #     }
+    #     Get-ChildItem -Path ".\${{ inputs.test_path }}" -Filter ${{ inputs.file_extenstion }} -Depth ${{ inputs.test_depth }} -Recurse -File -Name| ForEach-Object {            
+    #         dotnet test $_ --logger trx --results-directory "${{ inputs.temp_path }}" --configuration ${{ inputs.build_configuration }}
+    #     }
+    #   shell: powershell
+    #   if: ${{ inputs.dotnet_action == 'test' }}
+    # - run: |
+    #     cd "${{ inputs.path }}"
+    #     if(!(test-path "${{ inputs.temp_path }}")) {
+    #       mkdir "${{ inputs.temp_path }}"
+    #     }
+
+        
+        
+    #     Get-ChildItem -Path .\  -Recurse -Depth 1 -Filter "wwwroot" -Directory  -Name |  ForEach-Object {
+    #         cd $_
+    #         cd ../
+    #         pwd
+    #         # $pt =  (get-item $_ ).parent.FullName
+    #         # cd $pt
+    #         $NAME= (get-item "${{ inputs.file_extenstion }}")
+    #         echo --- NAME ---
+    #         echo $NAME
+    #         # if((test-path -Path ".\$NAME")) {
+    #           dotnet publish $NAME --configuration "${{ inputs.build_configuration }}" --output "${{ inputs.temp_path }}" /property:Version="${{ inputs.newTag }}"
+    #         # }
+
+    #         # echo "${{ inputs.path }}"
+    #         # echo ----
+    #         # echo "$pt"
+    #         # cd "$pt"
+    #         # Get-ChildItem -Path .\  -Filter "${{ inputs.file_extenstion }}" -File  -Name |  ForEach-Object {
+    #         #     dotnet publish $_ --configuration "${{ inputs.build_configuration }}" --output "${{ inputs.temp_path }}" /property:Version="${{ inputs.newTag }}"
+    #         # }
+    #     }
+    #   shell: powershell
+    #   if: ${{ inputs.dotnet_action == 'publish' && inputs.dotnet_web_publish == 'true'}}
+    # - run: |
+    #     cd "${{ inputs.path }}"
+    #     if(!(test-path "${{ inputs.temp_path }}")) {
+    #       mkdir "${{ inputs.temp_path }}"
+    #     }       
+        
+    #     Get-ChildItem -Path .\ -Recurse -Filter "${{ inputs.file_extenstion }}"  -Depth 1 -File  -Name |  ForEach-Object {
+    #         dotnet publish $_ --configuration "${{ inputs.build_configuration }}" --output "${{ inputs.temp_path }}" /property:Version="${{ inputs.newTag }}"
+    #     }        
+    #   shell: powershell
+    #   if: ${{ inputs.dotnet_action == 'publish' && inputs.dotnet_web_publish != 'true'}}
