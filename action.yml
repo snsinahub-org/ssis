@@ -32,7 +32,7 @@ runs:
         $Env:PATH += ";$VS_PATH"
         cd "${{ inputs.project_path }}"
         Get-ChildItem -Path .\ -Filter "${{ inputs.file_extenstion }}" -File -Name| ForEach-Object {          
-          $proj = "${{ inputs.project_path }}\" + $_
+          $proj = $_
           echo "Path ----- > " + $proj
           devenv "$proj" /build "${{ inputs.project_configuration }}" /Project "$proj"
           C:\Windows\System32\robocopy.exe "$proj\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
