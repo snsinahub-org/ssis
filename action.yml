@@ -26,10 +26,9 @@ runs:
         $TMP = Split-Path -Path $VS_FILE.replace('\\', '\')
         $VS_PATH = $TMP.replace('"', '')
         $Env:PATH += ";$VS_PATH"
-        Get-ChildItem -Path ${{ inputs.project_path }} -Filter *.dtproj -Recurse -File -Name| ForEach-Object {
-
+        Get-ChildItem -Path "${{ inputs.project_path }}"" -Filter *.dtproj -Recurse -File -Name| ForEach-Object {
+          echo $_
           devenv $_ /build Development /Project $_
-
         }
         C:\Windows\System32\robocopy.exe D:\TFS_BUILD\Working\13\s\BulkUploadPackages\bin\Development D:\TFS_BUILD\Working\13\a /s /r:10
       shell: powershell
