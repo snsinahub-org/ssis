@@ -32,7 +32,7 @@ runs:
         $Env:PATH += ";$VS_PATH"
         # cd "${{ inputs.project_path }}"
         Get-ChildItem -Path "${{ inputs.project_path }}" -Filter "${{ inputs.file_extenstion }}" -File -Name| ForEach-Object {          
-          $proj = $_
+          $proj = "${{ inputs.project_path }}/" + $_
           echo "Path ----- > " + $proj
           $directory=Split-Path -Path $proj
           devenv "$proj" /build "${{ inputs.project_configuration }}" /Project "$proj"
