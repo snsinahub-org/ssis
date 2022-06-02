@@ -30,15 +30,16 @@ runs:
         $TMP = Split-Path -Path $VS_FILE.replace('\\', '\')
         $VS_PATH = $TMP.replace('"', '')
         $Env:PATH += ";$VS_PATH"
-        # cd "${{ inputs.project_path }}"
-        Get-ChildItem -Path "${{ inputs.project_path }}" -Filter "${{ inputs.file_extenstion }}" -File -Name| ForEach-Object {    
+        cd "${{ inputs.project_path }}"
+        Get-ChildItem -Path .\ -Filter "${{ inputs.file_extenstion }}" -File -Name| ForEach-Object {    
 
           $proj = "${{ inputs.project_path }}/" + $_
           echo "Path ----- >  + $proj"
           $directory=Split-Path -Path "$proj"
-          cd "${{ inputs.project_path }}"
-          Get-ChildItem -Path \. -Recurse -Filter "*.dtproj" -File -Name| ForEach-Object { 
+          cd "$directory"
+          Get-ChildItem -Path "$directory" -Recurse -Filter "*.dtproj" -File -Name| ForEach-Object { 
             # $directory=Split-Path -Path $proj
+            pwd
             echo "devenv $_ /build ${{ inputs.project_configuration }} /Project $_"
             devenv "$_" /build "${{ inputs.project_configuration }}" /Project "$_"            
           }         
