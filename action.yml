@@ -29,7 +29,7 @@ runs:
         cd "${{ inputs.project_path }}"
         Get-ChildItem -Path .\ -Filter "*.sln" -File -Name| ForEach-Object {          
           $proj = "${{ inputs.project_path }}\" + $_
-          echo $proj
+          echo "Path ----- > " + $proj
           devenv "$proj" /build "${{ inputs.project_configuration }}" /Project "$proj"
           C:\Windows\System32\robocopy.exe "$proj\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
         }
