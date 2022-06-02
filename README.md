@@ -1,5 +1,8 @@
 # ssis
 
+## Pre-requisites
+Install [JQ for windows](https://stedolan.github.io/jq/download/)
+
 ```YAML
 - name: ssis build
   uses : snsinahub-org/ssis@main
