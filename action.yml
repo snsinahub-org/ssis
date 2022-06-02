@@ -41,9 +41,10 @@ runs:
           Get-ChildItem -Path "$directory" -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
             # $directory=Split-Path -Path $proj
             echo $_
+            $bin_path=Split-Path -Path $_
             echo "devenv $_ /build ${{ inputs.project_configuration }} /Project $_"
             devenv "$_" /build "${{ inputs.project_configuration }}" /Project "$_"
-            C:\Windows\System32\robocopy.exe ".\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}" /s /r:10            
+            C:\Windows\System32\robocopy.exe ".\$bin_path\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}" /s /r:10            
           }         
           
           
