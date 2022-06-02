@@ -2,6 +2,7 @@
 
 ## Pre-requisites
 Install [JQ for windows](https://stedolan.github.io/jq/download/) in windows runner
+Or run ```chocolatey install jq ```
 
 ```YAML
 - name: ssis build
