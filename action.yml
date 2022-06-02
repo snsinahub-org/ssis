@@ -36,7 +36,7 @@ runs:
           echo "Path ----- > " + $proj
           $directory=Split-Path -Path $proj
           devenv "$proj" /build "${{ inputs.project_configuration }}" /Project "$proj"
-          C:\Windows\System32\robocopy.exe "$directory\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
+          C:\Windows\System32\robocopy.exe "${{ inputs.project_path }}\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}\a" /s /r:10
         }
                 
       shell: powershell
