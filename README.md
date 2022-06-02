@@ -12,4 +12,5 @@ Or run ```chocolatey install jq ```
     output_path: 'C:\Users\Siavash Namvar\a_temp'
     project_configuration: "Development"
     ssis_action: 'build'
+    file_extenstion: '*.sln'
 ```
