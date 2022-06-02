@@ -56,10 +56,7 @@ runs:
                 
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
-    - run: |
-        set/A errlev="%ERRORLEVEL% & 24"
-        exit/B %errlev%                
-      shell: cmd
+    
 
 
       
