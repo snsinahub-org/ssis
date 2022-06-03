@@ -64,7 +64,8 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |
-       
+
+        
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
         {
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
@@ -80,7 +81,8 @@ runs:
         
         $directory="${{ inputs.project_path }}"
         $build="$TMP_DIR\a"
-        
+        echo -----BUILD
+        echo $build
         if (-Not $(Test-Path -Path $build)) {
           mkdir $build
         }
@@ -89,16 +91,27 @@ runs:
         }
         Remove-Item -path $build -recurse
         Remove-Item -path ${{ inputs.output_path }}/* -recurse
-        
+        echo ----Directory
+        echo $directory
+        echo ---CD
         cd $directory
-        
+        echo ----LS
+        ls
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
-            $bin_path=Split-Path -Path "$directory\$_"             
+            $bin_path=Split-Path -Path "$directory\$_"
+            echo $bin_path
+            echo -----
+            echo $_
+            echo ----    
             echo "SSISBuild -project:'$_' -configuration:Development -output:'$build'"
             SSISBuild -project:"$_" -configuration:Development -output:"$build"
         }
 
-        Get-ChildItem -Path "$build" -Recurse  -File -Name| ForEach-Object {             
+        Get-ChildItem -Path "$build" -Recurse  -File -Name| ForEach-Object { 
+            echo '>>>>'
+            echo $_
+            echo '<<<<'
+            echo "$build\$_"
             Copy-Item -Path "$build\$_" -Destination "${{ inputs.output_path }}"
         }
       id: ssis-build-sa        
