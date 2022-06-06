@@ -80,11 +80,11 @@ runs:
         
         $directory="${{ inputs.project_path }}"
         $build="$TMP_DIR\a"
-        echo ----$build
+        
         if (-Not $(Test-Path -Path $build)) {
           mkdir "$build"
         }
-        echo ----ls build $(ls)
+        
         if (-Not $(Test-Path -Path ${{ inputs.output_path }})) {
           mkdir "${{ inputs.output_path }}"
         }
