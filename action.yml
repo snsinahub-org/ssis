@@ -64,9 +64,9 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |        
-        $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
         {
+            $TMP_DIR="C:\ssis_temp\1"
             echo "Installing SSIBuild"
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
             
@@ -101,12 +101,11 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build-sa' }}
     - run: |        
-        $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {
             echo "installing SSISDeploy"
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
-            
+            $TMP_DIR="C:\ssis_temp\1"
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
             }
@@ -121,7 +120,6 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'ssis-deploy-sql' }}
     - run: |        
-        $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {
             echo "installing SSISDeploy"
