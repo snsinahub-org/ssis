@@ -22,10 +22,27 @@ outputs:
     description: "Random number"
     value: ${{ steps.random-number-generator.outputs.random-number }}
 runs:
-  env: 
-    TMP_DIR:"C:\ssis_temp\1"
   using: "composite"
   steps:
+    - run: |        
+        Start-Process powershell -Verb runAs
+        $TMP_DIR="C:\ssis_temp\1"
+        if (-Not $(Test-Path -Path "$TMP_DIR")) 
+        {
+          mkdir "$TMP_DIR"
+        }
+        if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
+        {            
+            echo "Installing SSISDeploy"
+            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+            
+            
+            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
+            $Env:path += ";$TMP_DIR"
+        }
+      shell: powershell
+      id: setup-ssis
+      if: ${{ inputs.ssis_action == 'build-sa' ||  inputs.ssis_action == 'ssis-deploy-win' || inputs.ssis_action == 'ssis-deploy-multiple-win'}}
     - run: |
 
         $Env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\Installer"
@@ -181,7 +198,9 @@ runs:
             SSISDeploy -s:"$_" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:win 
         }
       shell: powershell
+      id: ssis-deploy-win-multiple
       if: ${{ inputs.ssis_action == 'ssis-deploy-multiple-win'}}
+    
     
 
 
