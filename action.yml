@@ -74,7 +74,13 @@ runs:
           mkdir "${{ inputs.output_path }}"
         }
         $TMP_DIR="C:\ssis_temp\1"
-        if (-Not $(Test-Path -Path "$TMP_DIR")) {
+        if (-Not $(Test-Path -Path "$TMP_DIR")) 
+        {
+          mkdir "$TMP_DIR"
+        }
+        else
+        {
+          Remove-Item -path $TMP_DIR -recurse
           mkdir "$TMP_DIR"
         }
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
@@ -141,6 +147,11 @@ runs:
         $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Test-Path -Path "$TMP_DIR")) 
         {
+          mkdir "$TMP_DIR"
+        }
+        else
+        {
+          Remove-Item -path $TMP_DIR -recurse
           mkdir "$TMP_DIR"
         }
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
