@@ -80,7 +80,7 @@ runs:
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
             
             if (Test-Path -Path $TMP_DIR) {
-                # Remove-Item -path $TMP_DIR -recurse
+                Remove-Item -path $TMP_DIR -recurse
             }
             else
             {
@@ -149,7 +149,7 @@ runs:
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
             
             if (Test-Path -Path $TMP_DIR) {
-                # Remove-Item -path $TMP_DIR -recurse
+                Remove-Item -path $TMP_DIR -recurse
             }
             else
             {
@@ -173,7 +173,7 @@ runs:
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
             
             if (Test-Path -Path $TMP_DIR) {
-                # Remove-Item -path $TMP_DIR -recurse
+                Remove-Item -path $TMP_DIR -recurse
             }
             else
             {
