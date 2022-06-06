@@ -68,7 +68,7 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |        
-        Start-Process powershell -Verb runAs
+        # Start-Process powershell -Verb runAs
         echo "Standalone build"
         if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
           mkdir "${{ inputs.output_path }}"
@@ -83,7 +83,7 @@ runs:
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
             
             
-            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
+            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
         }
         
@@ -118,7 +118,7 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build-sa' }}
     - run: |      
-        $TMP_DIR="C:\ssis_temp\1"  
+        # $TMP_DIR="C:\ssis_temp\1"  
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {
             echo "installing SSISDeploy"
@@ -127,7 +127,7 @@ runs:
                 Remove-Item -path $TMP_DIR -recurse
             }
             mkdir $TMP_DIR
-            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
+            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
 
         }
@@ -158,7 +158,7 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'ssis-deploy-win'}}
     - run: |        
-        Start-Process powershell -Verb runAs
+        # Start-Process powershell -Verb runAs
         $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Test-Path -Path "$TMP_DIR")) 
         {
@@ -170,7 +170,7 @@ runs:
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
             
             
-            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
+            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
         }
         echo "Win Deply started"
