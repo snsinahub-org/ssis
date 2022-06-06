@@ -64,9 +64,9 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |        
+        $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
-        {
-            $TMP_DIR="C:\ssis_temp\1"
+        {            
             echo "Installing SSIBuild"
             Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
             
@@ -80,9 +80,11 @@ runs:
         
         $directory="${{ inputs.project_path }}"
         $build="$TMP_DIR\a"
+        echo ----$build
         if (-Not $(Test-Path -Path $build)) {
           mkdir "$build"
         }
+        echo ----ls build $(ls)
         if (-Not $(Test-Path -Path ${{ inputs.output_path }})) {
           mkdir "${{ inputs.output_path }}"
         }
