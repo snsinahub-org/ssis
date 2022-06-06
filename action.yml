@@ -81,6 +81,7 @@ runs:
             
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
+                mkdir $TMP_DIR
             }
             else
             {
@@ -151,6 +152,7 @@ runs:
             
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
+                mkdir $TMP_DIR
             }
             else
             {
@@ -175,6 +177,7 @@ runs:
             
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
+                mkdir $TMP_DIR
             }
             else
             {
