@@ -68,6 +68,7 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |        
+        echo "Standalone build"
         if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
           mkdir "${{ inputs.output_path }}"
         }
