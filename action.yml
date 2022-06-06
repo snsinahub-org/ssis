@@ -97,7 +97,7 @@ runs:
         }
         Remove-Item -path $build -recurse
         Remove-Item -path ${{ inputs.output_path }}/* -recurse        
-        cd "$directory"
+        cd "${{ inputs.project_path }}"
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
             $bin_path=Split-Path -Path "$directory\$_"
             SSISBuild -project:"$_" -configuration:Development -output:"$build"
