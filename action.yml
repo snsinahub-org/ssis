@@ -88,8 +88,14 @@ runs:
         $directory="${{ inputs.project_path }}"
         $build="$TMP_DIR\a"
         
-        if (-Not $(Test-Path -Path $build)) {
+        if (-Not $(Test-Path -Path $build)) 
+        {
+          echo "creating $build"
           mkdir "$build"
+        }
+        else 
+        {
+          echo "$build exist"
         }
         
         if (-Not $(Test-Path -Path ${{ inputs.output_path }})) {
