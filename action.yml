@@ -164,6 +164,11 @@ runs:
         {
           mkdir "$TMP_DIR"
         }
+        else
+        {
+          Remove-Item -path $TMP_DIR -recurse
+          mkdir "$TMP_DIR"
+        }
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {            
             echo "Installing SSISDeploy"
