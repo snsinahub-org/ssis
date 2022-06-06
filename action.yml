@@ -31,7 +31,11 @@ runs:
         $TMP = Split-Path -Path $VS_FILE.replace('\\', '\')
         $VS_PATH = $TMP.replace('"', '')
         $Env:PATH += ";$VS_PATH"
+        
         cd "${{ inputs.project_path }}"
+        if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
+          mkdir "${{ inputs.output_path }}"
+        }
         Get-ChildItem -Path .\ -Filter "*.sln" -File -Name| ForEach-Object {    
 
           $proj = "${{ inputs.project_path }}/" + $_
@@ -64,6 +68,9 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |        
+        if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
+          mkdir "${{ inputs.output_path }}"
+        }
         $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
         {            
