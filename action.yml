@@ -68,7 +68,6 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'build' }}
     - run: |        
-        Start-Process powershell -Verb runAs
         echo "Standalone build"
         if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
           mkdir "${{ inputs.output_path }}"
@@ -77,17 +76,12 @@ runs:
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
         {            
             echo "Installing SSIBuild"
-            
+            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
             
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
-                mkdir $TMP_DIR
             }
-            else
-            {
-              mkdir $TMP_DIR
-            }
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe;
+            mkdir $TMP_DIR
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
             $Env:path += ";$TMP_DIR"
         }
@@ -122,17 +116,16 @@ runs:
       id: ssis-build-sa        
       shell: powershell
       if: ${{ inputs.ssis_action == 'build-sa' }}
-    - run: |      
-        $TMP_DIR="C:\ssis_temp\1"  
+    - run: |        
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {
             echo "installing SSISDeploy"
-                    
+            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
+            $TMP_DIR="C:\ssis_temp\1"
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
             }
             mkdir $TMP_DIR
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe;
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
             $Env:path += ";$TMP_DIR"
 
@@ -142,23 +135,16 @@ runs:
       id: ssis-deploy-sql        
       shell: powershell
       if: ${{ inputs.ssis_action == 'ssis-deploy-sql' }}
-    - run: |       
-        Start-Process powershell -Verb runAs 
-        $TMP_DIR="C:\ssis_temp\1"
+    - run: |        
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
-        {            
-            echo "Installing SSISDeploy"
-            
-            
+        {
+            echo "installing SSISDeploy"
+            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
+            $TMP_DIR="C:\ssis_temp\1"
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
-                mkdir $TMP_DIR
             }
-            else
-            {
-              mkdir $TMP_DIR
-            }
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe -Wait
+            mkdir $TMP_DIR
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
             $Env:path += ";$TMP_DIR"
         }
@@ -168,24 +154,18 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'ssis-deploy-win'}}
     - run: |        
-        Start-Process powershell -Verb runAs
-        $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
-        {            
-            echo "Installing SSIBuild"
-            
-            
+        {
+            echo "installing SSISDeploy"
+            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe
+            $TMP_DIR="C:\ssis_temp\1"
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
-                mkdir $TMP_DIR
             }
-            else
-            {
-              mkdir $TMP_DIR
-            }
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe;
+            mkdir $TMP_DIR
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR
             $Env:path += ";$TMP_DIR"
+
         }
         echo "Win Deply started"
         cd "${{ inputs.ssis_source }}"
