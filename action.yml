@@ -137,7 +137,7 @@ runs:
       shell: powershell
       if: ${{ inputs.ssis_action == 'ssis-deploy-sql' }}
     - run: |       
-        Start-Process powershell -Verb runAs 
+        # Start-Process powershell -Verb runAs 
         $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Test-Path -Path "$TMP_DIR")) 
         {
