@@ -80,14 +80,14 @@ runs:
         $directory="${{ inputs.project_path }}"
         $build="$TMP_DIR\a"
         if (-Not $(Test-Path -Path $build)) {
-          mkdir $build
+          mkdir "$build"
         }
         if (-Not $(Test-Path -Path ${{ inputs.output_path }})) {
-          mkdir ${{ inputs.output_path }}
+          mkdir "${{ inputs.output_path }}"
         }
         Remove-Item -path $build -recurse
         Remove-Item -path ${{ inputs.output_path }}/* -recurse        
-        cd $directory
+        cd "$directory"
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
             $bin_path=Split-Path -Path "$directory\$_"
             SSISBuild -project:"$_" -configuration:Development -output:"$build"
