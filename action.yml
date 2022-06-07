@@ -199,7 +199,7 @@ runs:
         echo "Win Deply started"
         cd "${{ inputs.ssis_source }}"
         Get-ChildItem -Path "${{ inputs.ssis_source }}" -Recurse -Depth 1 -Filter "*.ispac" -File -Name| ForEach-Object {             
-            SSISDeploy -s:"$_" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:win 
+            SSISDeploy -s:"${{ inputs.ssis_source }}\$_" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:win 
         }
       shell: powershell
       id: ssis-deploy-win-multiple
