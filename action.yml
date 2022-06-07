@@ -73,6 +73,11 @@ runs:
         if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
           mkdir -f "${{ inputs.output_path }}"
         }
+        else
+        {
+          Remove-Item -path ${{ inputs.output_path }}/* -recurse
+          mkdir -f "${{ inputs.output_path }}"
+        }
         $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Test-Path -Path "$TMP_DIR")) 
         {
@@ -103,12 +108,13 @@ runs:
         }
         else 
         {
+          Remove-Item -path $build -recurse
+          mkdir -f "$build"        
           echo "$build exist"
         }
         
         
-        Remove-Item -path $build -recurse
-        Remove-Item -path ${{ inputs.output_path }}/* -recurse        
+                
         cd "${{ inputs.project_path }}"
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
             $bin_path=Split-Path -Path "$directory\$_"
