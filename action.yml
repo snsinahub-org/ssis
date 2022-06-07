@@ -114,6 +114,7 @@ runs:
         cd "${{ inputs.project_path }}"
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
             $bin_path=Split-Path -Path "$directory\$_"
+            echo "SSISBuild -project:$_ -configuration:Development -output:"$build""
             SSISBuild -project:"$_" -configuration:Development -output:"$build"
         }
 
@@ -137,8 +138,7 @@ runs:
             $Env:path += ";$TMP_DIR"
 
         }
-        echo "SQL Deply started"
-        echo "SSISDeploy -s:'${{ inputs.ssis_source }}' -d:catalog;${{ inputs.ssis_destination }};${{ inputs.ssis_server }} -at:sql -u:${{ inputs.ssis_username }} -p:${{ inputs.ssis_password }}"
+        echo "SQL Deply started"        
         SSISDeploy -s:"${{ inputs.ssis_source }}" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:sql -u:${{ inputs.ssis_username }} -p:${{ inputs.ssis_password }}
       id: ssis-deploy-sql        
       shell: powershell
