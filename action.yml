@@ -119,8 +119,8 @@ runs:
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
             $bin_path=Split-Path -Path "$directory\$_"
             echo "$_"
-            echo "SSISBuild -project:'${{ inputs.project_path }}\$_' -configuration:Development -output:"$build""
-            SSISBuild -project:"${{ inputs.project_path }}\$_" -configuration:Development -output:"$build" 
+            echo "SSISBuild -project:'${{ inputs.project_path }}\$_' -configuration:Development -output:$build"
+            SSISBuild -project:"${{ inputs.project_path }}\$_" -configuration:Development -output:"$build" -log:DIAG
         }
 
         Get-ChildItem -Path "$build" -Recurse  -File -Name| ForEach-Object { 
