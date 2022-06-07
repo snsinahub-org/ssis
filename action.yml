@@ -71,12 +71,12 @@ runs:
         
         echo "Standalone build job"
         if (-Not $(Test-Path -Path "${{ inputs.output_path }}")) {
-          mkdir "${{ inputs.output_path }}"
+          mkdir -f "${{ inputs.output_path }}"
         }
         $TMP_DIR="C:\ssis_temp\1"
         if (-Not $(Test-Path -Path "$TMP_DIR")) 
         {
-          mkdir "$TMP_DIR"
+          mkdir -f "$TMP_DIR"
         }
         else
         {
@@ -99,7 +99,7 @@ runs:
         if (-Not $(Test-Path -Path $build)) 
         {
           echo "creating $build"
-          mkdir "$build"
+          mkdir -f "$build"
         }
         else 
         {
@@ -107,7 +107,7 @@ runs:
         }
         
         if (-Not $(Test-Path -Path ${{ inputs.output_path }})) {
-          mkdir "${{ inputs.output_path }}"
+          mkdir -f "${{ inputs.output_path }}"
         }
         Remove-Item -path $build -recurse
         Remove-Item -path ${{ inputs.output_path }}/* -recurse        
