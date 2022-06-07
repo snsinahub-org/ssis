@@ -138,6 +138,7 @@ runs:
 
         }
         echo "SQL Deply started"
+        echo "SSISDeploy -s:'${{ inputs.ssis_source }}' -d:catalog;${{ inputs.ssis_destination }};${{ inputs.ssis_server }} -at:sql -u:${{ inputs.ssis_username }} -p:${{ inputs.ssis_password }}"
         SSISDeploy -s:"${{ inputs.ssis_source }}" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:sql -u:${{ inputs.ssis_username }} -p:${{ inputs.ssis_password }}
       id: ssis-deploy-sql        
       shell: powershell
