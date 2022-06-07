@@ -106,9 +106,7 @@ runs:
           echo "$build exist"
         }
         
-        if (-Not $(Test-Path -Path ${{ inputs.output_path }})) {
-          mkdir -f "${{ inputs.output_path }}"
-        }
+        
         Remove-Item -path $build -recurse
         Remove-Item -path ${{ inputs.output_path }}/* -recurse        
         cd "${{ inputs.project_path }}"
