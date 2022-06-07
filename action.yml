@@ -119,6 +119,7 @@ runs:
         }
 
         Get-ChildItem -Path "$build" -Recurse  -File -Name| ForEach-Object { 
+            echo "Copy-Item -Path '$build\$_' -Destination '${{ inputs.output_path }}'"
             Copy-Item -Path "$build\$_" -Destination "${{ inputs.output_path }}"
         }
       id: ssis-build-sa        
