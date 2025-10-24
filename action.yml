@@ -17,6 +17,10 @@ inputs:
   ssis_action:  
     description: 'output_path'
     required: true
+  ssis_tool_source:
+    description: 'microsoft or release'
+    required: false
+    default: 'microsoft'
 outputs:
   random-number:
     description: "Random number"
@@ -44,19 +48,14 @@ runs:
           cd "$directory"
 
           Get-ChildItem -Path "$directory" -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
-            # $directory=Split-Path -Path $proj
             echo $_
             $bin_path=Split-Path -Path "$directory\$_"
             echo $bin_path
             echo "devenv $_ /build ${{ inputs.project_configuration }} /Project $_"
             devenv "$_" /build "${{ inputs.project_configuration }}" /Project "$_"
-            # echo "C:\Windows\System32\robocopy.exe '$bin_path' '${{ inputs.output_path }}' /s /r:10"
-            # C:\Windows\System32\robocopy.exe "$bin_path\bin\${{ inputs.project_configuration }}" "${{ inputs.output_path }}" /s  
             $bin_path=$bin_path.TrimEnd('\')
             echo "::set-output name=gh_bin_path::$(echo $bin_path)"
             echo "PRINT BIN DEVELOPMENT---->>> $bin_path"
-            # C:\Windows\System32\robocopy.exe "$bin_path" "${{ inputs.output_path }}" /s /r:10 /ndl
-            # Copy-Item -Path "$bin_path\bin\${{ inputs.project_configuration }}" -Destination "${{ inputs.output_path }}" 
             Get-ChildItem -Path "$bin_path\bin\${{ inputs.project_configuration }}"  -Recurse -File  -Name |  ForEach-Object {    
                 echo "$bin_path\$_"
                 Copy-Item -Path "$bin_path\bin\${{ inputs.project_configuration }}\$_" -Destination "${{ inputs.output_path }}"
@@ -91,9 +90,19 @@ runs:
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
         {            
             echo "Installing SSIBuild"
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
-            
-            
+            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+              $tag="v1.0.0"
+              $asset="SSISDevOpsTools-1.0.0.0.exe"
+              $repo="snsinahub-org/ssis"
+              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+              $a=$rel.assets | Where-Object { $_.name -eq $asset }
+              if(-not $a){ throw "Asset $asset not found in release $tag." }
+              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
+            } else {
+              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+            }
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
         }
@@ -112,8 +121,6 @@ runs:
           mkdir -f "$build"        
           echo "$build exist"
         }
-        
-        
                 
         cd "${{ inputs.project_path }}"
         Get-ChildItem -Path .\ -Recurse -Depth 1 -Filter "*.dtproj" -File -Name| ForEach-Object { 
@@ -135,7 +142,19 @@ runs:
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {
             echo "installing SSISDeploy"
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe            
+            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+              $tag="v1.0.0"
+              $asset="SSISDevOpsTools-1.0.0.0.exe"
+              $repo="snsinahub-org/ssis"
+              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+              $a=$rel.assets | Where-Object { $_.name -eq $asset }
+              if(-not $a){ throw "Asset $asset not found in release $tag." }
+              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
+            } else {
+              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe            
+            }
             if (Test-Path -Path $TMP_DIR) {
                 Remove-Item -path $TMP_DIR -recurse
             }
@@ -164,9 +183,19 @@ runs:
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {            
             echo "Installing SSISDeploy"
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe 
-            
-            
+            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+              $tag="v1.0.0"
+              $asset="SSISDevOpsTools-1.0.0.0.exe"
+              $repo="snsinahub-org/ssis"
+              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+              $a=$rel.assets | Where-Object { $_.name -eq $asset }
+              if(-not $a){ throw "Asset $asset not found in release $tag." }
+              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
+            } else {
+              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe 
+            }
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
         }
@@ -190,9 +219,19 @@ runs:
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {            
             echo "Installing SSISDeploy"
-            Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
-            
-            
+            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+              $tag="v1.0.0"
+              $asset="SSISDevOpsTools-1.0.0.0.exe"
+              $repo="snsinahub-org/ssis"
+              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+              $a=$rel.assets | Where-Object { $_.name -eq $asset }
+              if(-not $a){ throw "Asset $asset not found in release $tag." }
+              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
+            } else {
+              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+            }
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
         }
@@ -204,8 +243,3 @@ runs:
       shell: powershell
       id: ssis-deploy-win-multiple
       if: ${{ inputs.ssis_action == 'ssis-deploy-multiple-win'}}
-    
-    
-
-
-      
