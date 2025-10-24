@@ -21,6 +21,10 @@ inputs:
     description: 'microsoft or release'
     required: false
     default: 'microsoft'
+  insecure_skip_cert_validation:
+    description: 'LAST RESORT: true to bypass TLS certificate validation ONLY for installer download'
+    required: false
+    default: 'false'
 outputs:
   random-number:
     description: "Random number"
@@ -90,18 +94,38 @@ runs:
         if (-Not $(Get-Command SSISBuild -errorAction SilentlyContinue))
         {            
             echo "Installing SSIBuild"
-            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
-              $tag="v1.0.0"
-              $asset="SSISDevOpsTools-1.0.0.0.exe"
-              $repo="snsinahub-org/ssis"
-              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
-              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
-              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
-              $a=$rel.assets | Where-Object { $_.name -eq $asset }
-              if(-not $a){ throw "Asset $asset not found in release $tag." }
-              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
-            } else {
-              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+            # --- Safer TLS setup & optional cert bypass ---
+            $current=[Net.ServicePointManager]::SecurityProtocol
+            if (($current -band [Net.SecurityProtocolType]::Tls12) -eq 0){
+              [Net.ServicePointManager]::SecurityProtocol = $current -bor [Net.SecurityProtocolType]::Tls12
+            }
+            $insecure = ("${{ inputs.insecure_skip_cert_validation }}").ToLower() -eq "true"
+            if ($insecure){
+              Write-Host "WARNING: Insecure cert validation bypass ENABLED for installer download."
+              $prevCallback=[System.Net.ServicePointManager]::ServerCertificateValidationCallback
+              [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { param($sender,$cert,$chain,$errors) $true }
+            }
+            try {
+              if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+                $tag="v1.0.0"
+                $asset="SSISDevOpsTools-1.0.0.0.exe"
+                $repo="snsinahub-org/ssis"
+                $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+                $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+                $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+                $a=$rel.assets | Where-Object { $_.name -eq $asset }
+                if(-not $a){ throw "Asset $asset not found in release $tag." }
+                # Use browser_download_url for public asset (more robust cross-repo)
+                $downloadUrl = $a.browser_download_url
+                Invoke-WebRequest -Uri $downloadUrl -OutFile ./SSISDevOpsTools.exe
+              } else {
+                Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+              }
+            } finally {
+              if ($insecure){
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $prevCallback
+                Write-Host "Certificate validation callback restored."
+              }
             }
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
             $Env:path += ";$TMP_DIR"
@@ -142,26 +166,44 @@ runs:
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {
             echo "installing SSISDeploy"
-            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
-              $tag="v1.0.0"
-              $asset="SSISDevOpsTools-1.0.0.0.exe"
-              $repo="snsinahub-org/ssis"
-              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
-              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
-              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
-              $a=$rel.assets | Where-Object { $_.name -eq $asset }
-              if(-not $a){ throw "Asset $asset not found in release $tag." }
-              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
-            } else {
-              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe            
+            # --- Safer TLS setup & optional cert bypass ---
+            $current=[Net.ServicePointManager]::SecurityProtocol
+            if (($current -band [Net.SecurityProtocolType]::Tls12) -eq 0){
+              [Net.ServicePointManager]::SecurityProtocol = $current -bor [Net.SecurityProtocolType]::Tls12
             }
-            if (Test-Path -Path $TMP_DIR) {
-                Remove-Item -path $TMP_DIR -recurse
+            $insecure = ("${{ inputs.insecure_skip_cert_validation }}").ToLower() -eq "true"
+            if ($insecure){
+              Write-Host "WARNING: Insecure cert validation bypass ENABLED for installer download."
+              $prevCallback=[System.Net.ServicePointManager]::ServerCertificateValidationCallback
+              [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { param($sender,$cert,$chain,$errors) $true }
             }
-            mkdir $TMP_DIR
-            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
-            $Env:path += ";$TMP_DIR"
-
+            try {
+              if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+                $tag="v1.0.0"
+                $asset="SSISDevOpsTools-1.0.0.0.exe"
+                $repo="snsinahub-org/ssis"
+                $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+                $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+                $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+                $a=$rel.assets | Where-Object { $_.name -eq $asset }
+                if(-not $a){ throw "Asset $asset not found in release $tag." }
+                $downloadUrl = $a.browser_download_url
+                Invoke-WebRequest -Uri $downloadUrl -OutFile ./SSISDevOpsTools.exe
+              } else {
+                Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe            
+              }
+              if (Test-Path -Path $TMP_DIR) {
+                  Remove-Item -path $TMP_DIR -recurse
+              }
+              mkdir $TMP_DIR
+              ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
+              $Env:path += ";$TMP_DIR"
+            } finally {
+              if ($insecure){
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $prevCallback
+                Write-Host "Certificate validation callback restored."
+              }
+            }
         }
         echo "SQL Deply started"        
         SSISDeploy -s:"${{ inputs.ssis_source }}" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:sql -u:${{ inputs.ssis_username }} -p:${{ inputs.ssis_password }}
@@ -183,21 +225,40 @@ runs:
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {            
             echo "Installing SSISDeploy"
-            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
-              $tag="v1.0.0"
-              $asset="SSISDevOpsTools-1.0.0.0.exe"
-              $repo="snsinahub-org/ssis"
-              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
-              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
-              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
-              $a=$rel.assets | Where-Object { $_.name -eq $asset }
-              if(-not $a){ throw "Asset $asset not found in release $tag." }
-              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
-            } else {
-              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe 
+            # --- Safer TLS setup & optional cert bypass ---
+            $current=[Net.ServicePointManager]::SecurityProtocol
+            if (($current -band [Net.SecurityProtocolType]::Tls12) -eq 0){
+              [Net.ServicePointManager]::SecurityProtocol = $current -bor [Net.SecurityProtocolType]::Tls12
             }
-            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
-            $Env:path += ";$TMP_DIR"
+            $insecure = ("${{ inputs.insecure_skip_cert_validation }}").ToLower() -eq "true"
+            if ($insecure){
+              Write-Host "WARNING: Insecure cert validation bypass ENABLED for installer download."
+              $prevCallback=[System.Net.ServicePointManager]::ServerCertificateValidationCallback
+              [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { param($sender,$cert,$chain,$errors) $true }
+            }
+            try {
+              if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+                $tag="v1.0.0"
+                $asset="SSISDevOpsTools-1.0.0.0.exe"
+                $repo="snsinahub-org/ssis"
+                $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+                $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+                $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+                $a=$rel.assets | Where-Object { $_.name -eq $asset }
+                if(-not $a){ throw "Asset $asset not found in release $tag." }
+                $downloadUrl = $a.browser_download_url
+                Invoke-WebRequest -Uri $downloadUrl -OutFile ./SSISDevOpsTools.exe
+              } else {
+                Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe 
+              }
+              ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
+              $Env:path += ";$TMP_DIR"
+            } finally {
+              if ($insecure){
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $prevCallback
+                Write-Host "Certificate validation callback restored."
+              }
+            }
         }
         echo "Win Deply started"
         SSISDeploy -s:"${{ inputs.ssis_source }}" -d:catalog`;${{ inputs.ssis_destination }}`;${{ inputs.ssis_server }} -at:win 
@@ -219,21 +280,40 @@ runs:
         if (-Not $(Get-Command SSISDeploy -errorAction SilentlyContinue))
         {            
             echo "Installing SSISDeploy"
-            if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
-              $tag="v1.0.0"
-              $asset="SSISDevOpsTools-1.0.0.0.exe"
-              $repo="snsinahub-org/ssis"
-              $api="https://api.github.com/repos/$repo/releases/tags/$tag"
-              $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
-              $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
-              $a=$rel.assets | Where-Object { $_.name -eq $asset }
-              if(-not $a){ throw "Asset $asset not found in release $tag." }
-              Invoke-WebRequest -Headers @{ Authorization=$headers.Authorization; Accept="application/octet-stream"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" } -Uri $a.url -OutFile ./SSISDevOpsTools.exe
-            } else {
-              Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+            # --- Safer TLS setup & optional cert bypass ---
+            $current=[Net.ServicePointManager]::SecurityProtocol
+            if (($current -band [Net.SecurityProtocolType]::Tls12) -eq 0){
+              [Net.ServicePointManager]::SecurityProtocol = $current -bor [Net.SecurityProtocolType]::Tls12
             }
-            ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
-            $Env:path += ";$TMP_DIR"
+            $insecure = ("${{ inputs.insecure_skip_cert_validation }}").ToLower() -eq "true"
+            if ($insecure){
+              Write-Host "WARNING: Insecure cert validation bypass ENABLED for installer download."
+              $prevCallback=[System.Net.ServicePointManager]::ServerCertificateValidationCallback
+              [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { param($sender,$cert,$chain,$errors) $true }
+            }
+            try {
+              if ("${{ inputs.ssis_tool_source }}".ToLower() -eq "release") {
+                $tag="v1.0.0"
+                $asset="SSISDevOpsTools-1.0.0.0.exe"
+                $repo="snsinahub-org/ssis"
+                $api="https://api.github.com/repos/$repo/releases/tags/$tag"
+                $headers=@{ Authorization="Bearer $env:GITHUB_TOKEN"; Accept="application/vnd.github+json"; "X-GitHub-Api-Version"="2022-11-28"; "User-Agent"="ssis-action" }
+                $rel=Invoke-RestMethod -Headers $headers -Uri $api -Method GET
+                $a=$rel.assets | Where-Object { $_.name -eq $asset }
+                if(-not $a){ throw "Asset $asset not found in release $tag." }
+                $downloadUrl = $a.browser_download_url
+                Invoke-WebRequest -Uri $downloadUrl -OutFile ./SSISDevOpsTools.exe
+              } else {
+                Invoke-RestMethod -Uri https://download.microsoft.com/download/5/1/4/5144b772-d3b0-4e1c-a05b-5376f2ea0fc1/SSISDevOpsTools-1.0.0.0.exe -OutFile ./SSISDevOpsTools.exe        
+              }
+              ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
+              $Env:path += ";$TMP_DIR"
+            } finally {
+              if ($insecure){
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $prevCallback
+                Write-Host "Certificate validation callback restored."
+              }
+            }
         }
         echo "Win Deply started"
         cd "${{ inputs.ssis_source }}"
