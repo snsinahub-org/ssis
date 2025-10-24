@@ -19,25 +19,30 @@ inputs:
     required: true
 
   ssis_tool_source:
-    description: 'microsoft | release | repo (where repo uses the bundled SSISDevOpsTools-1.0.0.0.exe in this action repository)'
+    description: 'microsoft | release | repo | local (repo: bundled file; local: use runner path you supply via ssis_local_installer_path)'
     required: false
     default: 'microsoft'
 
   insecure_skip_cert_validation:
-    description: 'LAST RESORT: true to bypass TLS certificate validation ONLY for installer download'
+    description: 'LAST RESORT: true bypasses TLS certificate validation ONLY for installer download (do not use permanently)'
     required: false
     default: 'false'
 
   ssis_repo_installer_path:
-    description: 'Relative path (inside action repo) to bundled installer when ssis_tool_source=repo'
+    description: 'Relative path (inside repo) to bundled installer when ssis_tool_source=repo'
     required: false
     default: 'SSISDevOpsTools-1.0.0.0.exe'
+
+  ssis_local_installer_path:
+    description: 'Absolute or runner-accessible path to SSISDevOpsTools*.exe when ssis_tool_source=local'
+    required: false
+    default: ''
 
   ssis_source:
     description: '.ispac file path OR directory (for deploy actions)'
     required: false
   ssis_destination:
-    description: 'SSIS Catalog destination path (e.g. /SSISDB/Folder)'
+    description: 'SSIS Catalog path (e.g. /SSISDB/Folder)'
     required: false
   ssis_server:
     description: 'Target SSIS / SQL Server host'
@@ -122,9 +127,9 @@ runs:
         if (-Not (Get-Command SSISBuild -ErrorAction SilentlyContinue)) {
           echo "Installing SSISBuild tooling"
           $current = [Net.ServicePointManager]::SecurityProtocol
-            if (($current -band [Net.SecurityProtocolType]::Tls12) -eq 0){
-              [Net.ServicePointManager]::SecurityProtocol = $current -bor [Net.SecurityProtocolType]::Tls12
-            }
+          if (($current -band [Net.SecurityProtocolType]::Tls12) -eq 0){
+            [Net.ServicePointManager]::SecurityProtocol = $current -bor [Net.SecurityProtocolType]::Tls12
+          }
           $insecure = ("${{ inputs.insecure_skip_cert_validation }}").ToLower() -eq "true"
           if ($insecure) {
             Write-Host "WARNING: Insecure cert validation bypass ENABLED for installer download."
@@ -155,8 +160,14 @@ runs:
                 if (-Not (Test-Path $repoPath)) { throw "Bundled installer not found at $repoPath" }
                 Copy-Item $repoPath $installerOut -Force
               }
+              'local' {
+                $localPath = "${{ inputs.ssis_local_installer_path }}"
+                if ([string]::IsNullOrWhiteSpace($localPath)) { throw "ssist_tool_source=local requires ssis_local_installer_path to be set." }
+                if (-Not (Test-Path $localPath)) { throw "Local installer not found at $localPath" }
+                Copy-Item $localPath $installerOut -Force
+              }
               default {
-                throw "Unknown ssis_tool_source value '${{ inputs.ssis_tool_source }}'. Use microsoft | release | repo."
+                throw "Unknown ssis_tool_source value '${{ inputs.ssis_tool_source }}'. Use microsoft | release | repo | local."
               }
             }
           }
@@ -228,6 +239,12 @@ runs:
                 if (-Not (Test-Path $repoPath)) { throw "Bundled installer not found at $repoPath" }
                 Copy-Item $repoPath $installerOut -Force
               }
+              'local' {
+                $localPath = "${{ inputs.ssis_local_installer_path }}"
+                if ([string]::IsNullOrWhiteSpace($localPath)) { throw "ssist_tool_source=local requires ssis_local_installer_path to be set." }
+                if (-Not (Test-Path $localPath)) { throw "Local installer not found at $localPath" }
+                Copy-Item $localPath $installerOut -Force
+              }
               default { throw "Unknown ssis_tool_source '${{ inputs.ssis_tool_source }}'." }
             }
 
@@ -293,6 +310,12 @@ runs:
                 if (-Not (Test-Path $repoPath)) { throw "Bundled installer not found at $repoPath" }
                 Copy-Item $repoPath $installerOut -Force
               }
+              'local' {
+                $localPath = "${{ inputs.ssis_local_installer_path }}"
+                if ([string]::IsNullOrWhiteSpace($localPath)) { throw "ssist_tool_source=local requires ssis_local_installer_path to be set." }
+                if (-Not (Test-Path $localPath)) { throw "Local installer not found at $localPath" }
+                Copy-Item $localPath $installerOut -Force
+              }
               default { throw "Unknown ssis_tool_source '${{ inputs.ssis_tool_source }}'." }
             }
             ./SSISDevOpsTools.exe /Q /C /T:$TMP_DIR | Wait-Job
@@ -354,6 +377,12 @@ runs:
                 $repoPath = Join-Path $env:GITHUB_ACTION_PATH "${{ inputs.ssis_repo_installer_path }}"
                 if (-Not (Test-Path $repoPath)) { throw "Bundled installer not found at $repoPath" }
                 Copy-Item $repoPath $installerOut -Force
+              }
+              'local' {
+                $localPath = "${{ inputs.ssis_local_installer_path }}"
+                if ([string]::IsNullOrWhiteSpace($localPath)) { throw "ssist_tool_source=local requires ssis_local_installer_path to be set." }
+                if (-Not (Test-Path $localPath)) { throw "Local installer not found at $localPath" }
+                Copy-Item $localPath $installerOut -Force
               }
               default { throw "Unknown ssis_tool_source '${{ inputs.ssis_tool_source }}'." }
             }
